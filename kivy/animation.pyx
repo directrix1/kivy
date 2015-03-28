@@ -511,26 +511,27 @@ class AnimationTransition(object):
     '''
 
     @staticmethod
-    def linear(progress):
+    def linear(double progress):
         '''.. image:: images/anim_linear.png'''
         return progress
 
     @staticmethod
-    def in_quad(progress):
+    def in_quad(double progress):
         '''.. image:: images/anim_in_quad.png
         '''
         return progress * progress
 
     @staticmethod
-    def out_quad(progress):
+    def out_quad(double progress):
         '''.. image:: images/anim_out_quad.png
         '''
         return -1.0 * progress * (progress - 2.0)
 
     @staticmethod
-    def in_out_quad(progress):
+    def in_out_quad(double progress):
         '''.. image:: images/anim_in_out_quad.png
         '''
+        cdef double p
         p = progress * 2
         if p < 1:
             return 0.5 * p * p
@@ -538,22 +539,24 @@ class AnimationTransition(object):
         return -0.5 * (p * (p - 2.0) - 1.0)
 
     @staticmethod
-    def in_cubic(progress):
+    def in_cubic(double progress):
         '''.. image:: images/anim_in_cubic.png
         '''
         return progress * progress * progress
 
     @staticmethod
-    def out_cubic(progress):
+    def out_cubic(double progress):
         '''.. image:: images/anim_out_cubic.png
         '''
+        cdef double p
         p = progress - 1.0
         return p * p * p + 1.0
 
     @staticmethod
-    def in_out_cubic(progress):
+    def in_out_cubic(double progress):
         '''.. image:: images/anim_in_out_cubic.png
         '''
+        cdef double p
         p = progress * 2
         if p < 1:
             return 0.5 * p * p * p
@@ -561,71 +564,85 @@ class AnimationTransition(object):
         return 0.5 * (p * p * p + 2.0)
 
     @staticmethod
-    def in_quart(progress):
+    def in_quart(double progress):
         '''.. image:: images/anim_in_quart.png
         '''
-        return progress * progress * progress * progress
+        cdef double psq
+        psq = progress * progress
+        return psq * psq
 
     @staticmethod
-    def out_quart(progress):
+    def out_quart(double progress):
         '''.. image:: images/anim_out_quart.png
         '''
+        cdef double p, psq
         p = progress - 1.0
-        return -1.0 * (p * p * p * p - 1.0)
+        psq = p * p
+        return -1.0 * (psq * psq - 1.0)
 
     @staticmethod
-    def in_out_quart(progress):
+    def in_out_quart(double progress):
         '''.. image:: images/anim_in_out_quart.png
         '''
+        cdef double p, psq
         p = progress * 2
         if p < 1:
-            return 0.5 * p * p * p * p
+            psq = p * p
+            return 0.5 * psq * psq
         p -= 2
-        return -0.5 * (p * p * p * p - 2.0)
+        psq = p * p
+        return -0.5 * (psq * psq - 2.0)
 
     @staticmethod
-    def in_quint(progress):
+    def in_quint(double progress):
         '''.. image:: images/anim_in_quint.png
         '''
-        return progress * progress * progress * progress * progress
+        cdef double psq
+        psq = progress * progress
+        return psq * psq * progress
 
     @staticmethod
-    def out_quint(progress):
+    def out_quint(double progress):
         '''.. image:: images/anim_out_quint.png
         '''
+        cdef double p, psq
         p = progress - 1.0
-        return p * p * p * p * p + 1.0
+        psq = p * p
+        return psq * psq * p + 1.0
 
     @staticmethod
-    def in_out_quint(progress):
+    def in_out_quint(double progress):
         '''.. image:: images/anim_in_out_quint.png
         '''
+        cdef double p, psq
         p = progress * 2
         if p < 1:
-            return 0.5 * p * p * p * p * p
+            psq = p * p
+            return 0.5 * psq * psq * p
         p -= 2.0
-        return 0.5 * (p * p * p * p * p + 2.0)
+        psq = p * p
+        return 0.5 * (psq * psq * p + 2.0)
 
     @staticmethod
-    def in_sine(progress):
+    def in_sine(double progress):
         '''.. image:: images/anim_in_sine.png
         '''
         return -1.0 * cos(progress * (pi / 2.0)) + 1.0
 
     @staticmethod
-    def out_sine(progress):
+    def out_sine(double progress):
         '''.. image:: images/anim_out_sine.png
         '''
         return sin(progress * (pi / 2.0))
 
     @staticmethod
-    def in_out_sine(progress):
+    def in_out_sine(double progress):
         '''.. image:: images/anim_in_out_sine.png
         '''
         return -0.5 * (cos(pi * progress) - 1.0)
 
     @staticmethod
-    def in_expo(progress):
+    def in_expo(double progress):
         '''.. image:: images/anim_in_expo.png
         '''
         if progress == 0:
@@ -633,7 +650,7 @@ class AnimationTransition(object):
         return pow(2, 10 * (progress - 1.0))
 
     @staticmethod
-    def out_expo(progress):
+    def out_expo(double progress):
         '''.. image:: images/anim_out_expo.png
         '''
         if progress == 1.0:
@@ -641,9 +658,10 @@ class AnimationTransition(object):
         return -pow(2, -10 * progress) + 1.0
 
     @staticmethod
-    def in_out_expo(progress):
+    def in_out_expo(double progress):
         '''.. image:: images/anim_in_out_expo.png
         '''
+        cdef double p
         if progress == 0:
             return 0.0
         if progress == 1.:
@@ -655,22 +673,24 @@ class AnimationTransition(object):
         return 0.5 * (-pow(2, -10 * p) + 2.0)
 
     @staticmethod
-    def in_circ(progress):
+    def in_circ(double progress):
         '''.. image:: images/anim_in_circ.png
         '''
         return -1.0 * (sqrt(1.0 - progress * progress) - 1.0)
 
     @staticmethod
-    def out_circ(progress):
+    def out_circ(double progress):
         '''.. image:: images/anim_out_circ.png
         '''
+        cdef double p
         p = progress - 1.0
         return sqrt(1.0 - p * p)
 
     @staticmethod
-    def in_out_circ(progress):
+    def in_out_circ(double progress):
         '''.. image:: images/anim_in_out_circ.png
         '''
+        cdef double p
         p = progress * 2
         if p < 1:
             return -0.5 * (sqrt(1.0 - p * p) - 1.0)
@@ -678,9 +698,10 @@ class AnimationTransition(object):
         return 0.5 * (sqrt(1.0 - p * p) + 1.0)
 
     @staticmethod
-    def in_elastic(progress):
+    def in_elastic(double progress):
         '''.. image:: images/anim_in_elastic.png
         '''
+        cdef double p, s, q
         p = .3
         s = p / 4.0
         q = progress
@@ -690,9 +711,10 @@ class AnimationTransition(object):
         return -(pow(2, 10 * q) * sin((q - s) * (2 * pi) / p))
 
     @staticmethod
-    def out_elastic(progress):
+    def out_elastic(double progress):
         '''.. image:: images/anim_out_elastic.png
         '''
+        cdef double p, s, q
         p = .3
         s = p / 4.0
         q = progress
@@ -701,9 +723,10 @@ class AnimationTransition(object):
         return pow(2, -10 * q) * sin((q - s) * (2 * pi) / p) + 1.0
 
     @staticmethod
-    def in_out_elastic(progress):
+    def in_out_elastic(double progress):
         '''.. image:: images/anim_in_out_elastic.png
         '''
+        cdef double p, s, q
         p = .3 * 1.5
         s = p / 4.0
         q = progress * 2
@@ -717,22 +740,24 @@ class AnimationTransition(object):
             return pow(2, -10 * q) * sin((q - s) * (2.0 * pi) / p) * .5 + 1.0
 
     @staticmethod
-    def in_back(progress):
+    def in_back(double progress):
         '''.. image:: images/anim_in_back.png
         '''
         return progress * progress * ((1.70158 + 1.0) * progress - 1.70158)
 
     @staticmethod
-    def out_back(progress):
+    def out_back(double progress):
         '''.. image:: images/anim_out_back.png
         '''
+        cdef double p
         p = progress - 1.0
         return p * p * ((1.70158 + 1) * p + 1.70158) + 1.0
 
     @staticmethod
-    def in_out_back(progress):
+    def in_out_back(double progress):
         '''.. image:: images/anim_in_out_back.png
         '''
+        cdef double p, s
         p = progress * 2.
         s = 1.70158 * 1.525
         if p < 1:
@@ -741,7 +766,8 @@ class AnimationTransition(object):
         return 0.5 * (p * p * ((s + 1.0) * p + s) + 2.0)
 
     @staticmethod
-    def _out_bounce_internal(t, d):
+    def _out_bounce_internal(double t, double d):
+        cdef double p
         p = t / d
         if p < (1.0 / 2.75):
             return 7.5625 * p * p
@@ -756,25 +782,26 @@ class AnimationTransition(object):
             return 7.5625 * p * p + .984375
 
     @staticmethod
-    def _in_bounce_internal(t, d):
+    def _in_bounce_internal(double t, double d):
         return 1.0 - AnimationTransition._out_bounce_internal(d - t, d)
 
     @staticmethod
-    def in_bounce(progress):
+    def in_bounce(double progress):
         '''.. image:: images/anim_in_bounce.png
         '''
         return AnimationTransition._in_bounce_internal(progress, 1.)
 
     @staticmethod
-    def out_bounce(progress):
+    def out_bounce(double progress):
         '''.. image:: images/anim_out_bounce.png
         '''
         return AnimationTransition._out_bounce_internal(progress, 1.)
 
     @staticmethod
-    def in_out_bounce(progress):
+    def in_out_bounce(double progress):
         '''.. image:: images/anim_in_out_bounce.png
         '''
+        cdef double p
         p = progress * 2.
         if p < 1.:
             return AnimationTransition._in_bounce_internal(p, 1.) * .5
