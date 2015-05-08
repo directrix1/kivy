@@ -8,13 +8,17 @@ import sys
 
 from copy import deepcopy
 import os
-from os.path import join, dirname, sep, exists, basename
-from os import walk, environ
-from distutils.core import setup
-from distutils.extension import Extension
+from os.path import join, dirname, sep, exists, basename, isdir, abspath
+from os import walk, environ, makedirs, listdir
 from distutils.version import LooseVersion
 from collections import OrderedDict
 from time import sleep
+
+if environ.get('KIVY_USE_SETUPTOOLS'):
+    from setuptools import setup, Extension
+else:
+    from distutils.core import setup
+    from distutils.extension import Extension
 
 
 if sys.version > '3':
@@ -368,7 +372,7 @@ if platform not in ('ios', 'android') and (c_options['use_gstreamer']
 # detect SDL2, only on desktop and iOS
 # works if we forced the options or in autodetection
 sdl2_flags = {}
-if platform not in ('android') and c_options['use_sdl2'] in (None, True):
+if platform not in ('android',) and c_options['use_sdl2'] in (None, True):
 
     if c_options['use_osx_frameworks'] and platform == 'darwin':
         # check the existence of frameworks
@@ -611,6 +615,8 @@ graphics_dependencies = {
     'stencil_instructions.pxd': ['instructions.pxd'],
     'stencil_instructions.pyx': [
         'config.pxi', 'opcodes.pxi', 'c_opengl.pxd', 'c_opengl_debug.pxd'],
+    'scissor_instructions.pyx': [
+        'config.pxi', 'opcodes.pxi', 'c_opengl.pxd', 'c_opengl_debug.pxd'],
     'svg.pyx': ['config.pxi', 'common.pxi', 'texture.pxd', 'instructions.pxd',
                 'vertex_instructions.pxd', 'tesselator.pxd'],
     'texture.pxd': ['c_opengl.pxd'],
@@ -648,6 +654,7 @@ sources = {
     'graphics/opengl_utils.pyx': merge(base_flags, gl_flags),
     'graphics/shader.pyx': merge(base_flags, gl_flags),
     'graphics/stencil_instructions.pyx': merge(base_flags, gl_flags),
+    'graphics/scissor_instructions.pyx': merge(base_flags, gl_flags),
     'graphics/texture.pyx': merge(base_flags, gl_flags),
     'graphics/transformation.pyx': merge(base_flags, gl_flags),
     'graphics/vbo.pyx': merge(base_flags, gl_flags),
@@ -788,7 +795,7 @@ ext_modules = get_extensions_from_sources(sources)
 data_file_prefix = 'share/kivy-'
 examples = {}
 examples_allowed_ext = ('readme', 'py', 'wav', 'png', 'jpg', 'svg', 'json',
-                        'avi', 'gif', 'txt', 'ttf', 'obj', 'mtl', 'kv')
+                        'avi', 'gif', 'txt', 'ttf', 'obj', 'mtl', 'kv', 'mpg')
 for root, subFolders, files in walk('examples'):
     for fn in files:
         ext = fn.split('.')[-1].lower()
@@ -799,6 +806,14 @@ for root, subFolders, files in walk('examples'):
         if not directory in examples:
             examples[directory] = []
         examples[directory].append(filename)
+
+binary_deps = []
+binary_deps_path = join(src_path, 'kivy', 'binary_deps')
+if isdir(binary_deps_path):
+    for root, dirnames, filenames in walk(binary_deps_path):
+        for fname in filenames:
+            binary_deps.append(
+                join(root.replace(binary_deps_path, 'binary_deps'), fname))
 
 # -----------------------------------------------------------------------------
 # setup !
@@ -841,6 +856,7 @@ setup(
         'kivy.modules',
         'kivy.network',
         'kivy.storage',
+        'kivy.tests',
         'kivy.tools',
         'kivy.tools.packaging',
         'kivy.tools.packaging.pyinstaller_hooks',
@@ -870,6 +886,11 @@ setup(
         'data/glsl/*.png',
         'data/glsl/*.vs',
         'data/glsl/*.fs',
+        'tests/*.zip',
+        'tests/*.kv',
+        'tests/*.png',
+        'tests/*.ttf',
+        'tests/*.ogg',
         'tools/highlight/*.vim',
         'tools/highlight/*.el',
         'tools/packaging/README.txt',
@@ -878,7 +899,7 @@ setup(
         'tools/packaging/win32/README.txt',
         'tools/packaging/osx/Info.plist',
         'tools/packaging/osx/InfoPlist.strings',
-        'tools/packaging/osx/kivy.sh']},
+        'tools/packaging/osx/kivy.sh'] + binary_deps},
     data_files=list(examples.items()),
     classifiers=[
         'Development Status :: 5 - Production/Stable',

@@ -54,7 +54,7 @@ class Keyboard(EventDispatcher):
 
     '''
 
-    # Keycodes mapping, between str <-> int. Theses keycode are
+    # Keycodes mapping, between str <-> int. These keycodes are
     # currently taken from pygame.key. But when a new provider will be
     # used, it must do the translation to these keycodes too.
     keycodes = {
@@ -268,6 +268,7 @@ class WindowBase(EventDispatcher):
     __instance = None
     __initialized = False
     _fake_fullscreen = False
+    _density = 1
 
     # private properties
     _size = ListProperty([0, 0])
@@ -306,6 +307,8 @@ class WindowBase(EventDispatcher):
     def _get_size(self):
         r = self._rotation
         w, h = self._size
+        if self._density != 1:
+            w, h = self._win._get_gl_size()
         if self.softinput_mode == 'resize':
             h -= self.keyboard_height
         if r in (0, 180):
@@ -324,6 +327,7 @@ class WindowBase(EventDispatcher):
             return True
         else:
             return False
+
     size = AliasProperty(_get_size, _set_size, bind=('_size', ))
     '''Get the rotated size of the window. If :attr:`rotation` is set, then the
     size will change to reflect the rotation.
@@ -361,10 +365,13 @@ class WindowBase(EventDispatcher):
 
     # make some property read-only
     def _get_width(self):
+        _size = self._size
+        if self._density != 1:
+            _size = self._win._get_gl_size()
         r = self._rotation
         if r == 0 or r == 180:
-            return self._size[0]
-        return self._size[1]
+            return _size[0]
+        return _size[1]
 
     width = AliasProperty(_get_width, None, bind=('_rotation', '_size'))
     '''Rotated window width.
@@ -375,10 +382,13 @@ class WindowBase(EventDispatcher):
     def _get_height(self):
         '''Rotated window height'''
         r = self._rotation
+        _size = self._size
+        if self._density != 1:
+            _size = self._win._get_gl_size()
         kb = self.keyboard_height if self.softinput_mode == 'resize' else 0
         if r == 0 or r == 180:
-            return self._size[1] - kb
-        return self._size[0] - kb
+            return _size[1] - kb
+        return _size[0] - kb
 
     height = AliasProperty(_get_height, None, bind=('_rotation', '_size'))
     '''Rotated window height.
@@ -429,7 +439,7 @@ class WindowBase(EventDispatcher):
     when 'resize' The window is resized and the contents scaled to fit the
     remaining space.
 
-    ..versionadded::1.9.0
+    .. versionadded:: 1.9.0
 
     :attr:`softinput_mode` is a :class:`OptionProperty` defaults to None.
 
@@ -461,7 +471,7 @@ class WindowBase(EventDispatcher):
     '''Rerturns the height of the softkeyboard/IME on mobile platforms.
     Will return 0 if not on mobile platform or if IME is not active.
 
-    ..versionadded:: 1.9.0
+    .. versionadded:: 1.9.0
 
     :attr:`keyboard_height` is a read-only :class:`AliasProperty` defaults to 0.
     '''
@@ -647,7 +657,8 @@ class WindowBase(EventDispatcher):
         .. versionadded:: 1.9.0
 
         .. note::
-            This feature works with the SDL2 window provider only.
+            This feature requires a SDL2 window provider and is currently only
+            supported on desktop platforms.
 
         .. warning::
             This code is still experimental, and its API may be subject to
@@ -663,7 +674,8 @@ class WindowBase(EventDispatcher):
         .. versionadded:: 1.9.0
 
         .. note::
-            This feature works with the SDL2 window provider only.
+            This feature requires a SDL2 window provider and is currently only
+            supported on desktop platforms.
 
         .. warning::
             This code is still experimental, and its API may be subject to
@@ -679,7 +691,8 @@ class WindowBase(EventDispatcher):
         .. versionadded:: 1.9.0
 
         .. note::
-            This feature works with the SDL2 window provider only.
+            This feature requires a SDL2 window provider and is currently only
+            supported on desktop platforms.
 
         .. warning::
             This code is still experimental, and its API may be subject to
@@ -695,7 +708,8 @@ class WindowBase(EventDispatcher):
         .. versionadded:: 1.9.0
 
         .. note::
-            This feature works with the SDL2 window provider only.
+            This feature requires a SDL2 window provider and is currently only
+            supported on desktop platforms.
 
         .. warning::
             This code is still experimental, and its API may be subject to
@@ -711,7 +725,8 @@ class WindowBase(EventDispatcher):
         .. versionadded:: 1.9.0
 
         .. note::
-            This feature works with the SDL2 window provider only.
+            This feature requires a SDL2 window provider and is currently only
+            supported on desktop platforms.
 
         .. warning::
             This code is still experimental, and its API may be subject to
@@ -885,6 +900,8 @@ class WindowBase(EventDispatcher):
         '''
         if me.is_touch:
             w, h = self.system_size
+            if platform == 'ios' or self._density != 1:
+                w, h = self.size
             me.scale_for_screen(w, h, rotation=self._rotation,
                                 smode=self.softinput_mode,
                                 kheight=self.keyboard_height)
@@ -942,6 +959,8 @@ class WindowBase(EventDispatcher):
         from math import radians
 
         w, h = self.system_size
+        if self._density != 1:
+            w, h = self.size
 
         smode = self.softinput_mode
         kheight = self.keyboard_height
@@ -1090,7 +1109,7 @@ class WindowBase(EventDispatcher):
         '''Event called when keyboard is used.
 
         .. warning::
-            Some providers may omit `scancode`, `codepoint` and/or `modifier`!
+            Some providers may omit `scancode`, `codepoint` and/or `modifier`.
         '''
         if 'unicode' in kwargs:
             Logger.warning("The use of the unicode parameter is deprecated, "
@@ -1142,7 +1161,7 @@ class WindowBase(EventDispatcher):
         character or multiple ones, this event supports handling multiple
         characters.
 
-        ..versionadded:: 1.9.0
+        .. versionadded:: 1.9.0
         '''
         pass
 
