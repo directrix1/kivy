@@ -7,6 +7,7 @@ The context instructions represent non graphics elements such as:
 * Matrix manipulations (PushMatrix, PopMatrix, Rotate, Translate, Scale,
   MatrixInstruction)
 * Color manipulations (Color)
+* Uniform manipulations (Uniform)
 * Texture bindings (BindTexture)
 
 .. versionchanged:: 1.0.8
@@ -17,7 +18,7 @@ The context instructions represent non graphics elements such as:
 
 '''
 
-__all__ = ('Color', 'BindTexture', 'PushMatrix', 'PopMatrix',
+__all__ = ('Color', 'Uniform', 'BindTexture', 'PushMatrix', 'PopMatrix',
            'Rotate', 'Scale', 'Translate', 'MatrixInstruction',
            'gl_init_resources')
 
@@ -320,6 +321,33 @@ cdef class Color(ContextInstruction):
             return self.hsv[2]
         def __set__(self, x):
             self.hsv = [self.h, self.s, x]
+
+cdef class Uniform(ContextInstruction):
+    '''
+    Instruction to set a uniform state for any vertices being
+    drawn after it. Use this when you need to supply extra uniforms
+    for the active shader.
+
+    To declare a Uniform in Python, you can do::
+
+        from kivy.graphics import Uniform
+
+        a = Uniform(uniforms={'uniform1Name': uniform1Value})
+        b = Uniform(uniforms={'uniform1Name': uniform1Value, 'uniform2Name': uniform2Value})
+        a['uniform1Name'] = uniform1Value2
+
+    etc.
+    '''
+    def __init__(self, uniforms={}, **kwargs):
+        super(Uniform, self).__init__(**kwargs)
+        for uniform, value in uniforms.iteritems():
+            self.set_state(uniform, value)
+
+    def __getitem__(self, uniform):
+        return self.context_state[uniform]
+
+    def __setitem__(self, uniform, value):
+        self.set_state(uniform, value)
 
 
 cdef class BindTexture(ContextInstruction):

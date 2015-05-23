@@ -1,5 +1,6 @@
 cdef class LineWidth
 cdef class Color
+cdef class Uniform
 cdef class BindTexture
 
 from transformation cimport Matrix
@@ -19,6 +20,9 @@ cdef class LineWidth(ContextInstruction):
     cdef void apply(self)
 
 cdef class Color(ContextInstruction):
+    cdef void apply(self)
+
+cdef class Uniform(ContextInstruction):
     cdef void apply(self)
 
 cdef class BindTexture(ContextInstruction):
